@@ -1,291 +1,33 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-VERSION="3.0.0"
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-CYAN="\033[1;36m"
-GREEN="\033[1;32m"
-PURPLE="\033[1;35m"
-YELLOW="\033[1;33m"
-RED="\033[1;31m"
-RESET="\033[0m"
+VERSION="1.0.0"
+
+# Load modules
+source "$BASE_DIR/modules/security.sh"
+source "$BASE_DIR/modules/firewall.sh"
+source "$BASE_DIR/modules/hash.sh"
+source "$BASE_DIR/modules/encrypt.sh"
 
 
-banner(){
+logo(){
 
-clear
-
-echo -e "${CYAN}"
-
-echo "
+echo -e "\033[96m
 ██████╗ ██╗██╗   ██╗██╗███╗   ██╗██╗████████╗██╗   ██╗
 ██╔══██╗██║██║   ██║██║████╗  ██║██║╚══██╔══╝╚██╗ ██╔╝
 ██║  ██║██║██║   ██║██║██╔██╗ ██║██║   ██║    ╚████╔╝
 ██║  ██║██║╚██╗ ██╔╝██║██║╚██╗██║██║   ██║     ╚██╔╝
 ██████╔╝██║ ╚████╔╝ ██║██║ ╚████║██║   ██║      ██║
 ╚═════╝ ╚═╝  ╚═══╝  ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝      ╚═╝
-"
+\033[0m"
 
-echo -e "${PURPLE}"
-echo "CODE FIRST • SECURITY ALWAYS • IMPACT FOREVER"
-echo -e "${RESET}"
+echo -e "\033[95mCODE FIRST • SECURITY ALWAYS • IMPACT FOREVER\033[0m"
 
 }
 
 
-loading(){
-
-echo -ne "${CYAN}Loading Divinity Core"
-
-for i in 1 2 3
-do
-echo -ne "."
-sleep 0.3
-done
-
-echo -e "${RESET}"
-
-}
-
-
-
-status(){
-
-loading
-
-echo -e "${GREEN}"
-echo "===== DIVINITY DASHBOARD ====="
-echo -e "${RESET}"
-
-echo "Version: $VERSION"
-echo "User: $(whoami)"
-echo "Directory: $(pwd)"
-echo "Python: $(python --version 2>&1)"
-echo "Node: $(node -v 2>/dev/null)"
-echo "Git: $(git --version)"
-
-}
-
-
-
-git_push(){
-
-loading
-
-git add .
-
-git commit -m "$2"
-
-git push origin main
-
-echo -e "${GREEN}✓ Push Complete${RESET}"
-
-}
-
-
-
-create_python(){
-
-mkdir -p ~/projects/python/$1
-
-cd ~/projects/python/$1
-
-echo "print('Hello from Divinity')" > main.py
-
-echo "# $1
-Created with Divinity CLI" > README.md
-
-
-echo -e "${GREEN}✓ Python Project Created${RESET}"
-
-}
-
-
-
-create_node(){
-
-mkdir -p ~/projects/node/$1
-
-cd ~/projects/node/$1
-
-npm init -y
-
-echo "console.log('Hello Divinity');" > index.js
-
-echo -e "${GREEN}✓ Node Project Created${RESET}"
-
-}
-
-
-
-projects(){
-
-echo "Python Projects:"
-ls ~/projects/python 2>/dev/null
-
-echo
-
-echo "Node Projects:"
-ls ~/projects/node 2>/dev/null
-
-}
-
-
-
-open_project(){
-
-NAME=$2
-
-
-if [ -d ~/projects/python/$NAME ]; then
-
-cd ~/projects/python/$NAME
-
-
-elif [ -d ~/projects/node/$NAME ]; then
-
-cd ~/projects/node/$NAME
-
-
-else
-
-echo "Project not found"
-
-exit
-
-fi
-
-
-echo -e "${GREEN}✓ Opened $NAME${RESET}"
-
-pwd
-
-}
-
-
-
-repo_create(){
-
-NAME=$3
-
-mkdir -p ~/projects/$NAME
-
-cd ~/projects/$NAME
-
-git init
-
-echo "# $NAME" > README.md
-
-git add .
-
-git commit -m "Initial commit"
-
-gh repo create "$NAME" --public --source=. --remote=origin --push
-
-echo -e "${GREEN}✓ GitHub Repository Created${RESET}"
-
-}
-
-
-
-security_scan(){
-
-echo "DIVINITY SECURITY SCAN"
-
-echo
-
-echo "[✓] Searching secrets"
-
-grep -RniE "password|secret|token|api_key" . 2>/dev/null
-
-
-echo
-
-echo "[✓] Checking files"
-
-find . -name "*.key" -o -name "*.pem"
-
-
-echo
-
-echo "Scan Complete"
-
-}
-
-
-
-firewall(){
-
-echo "DIVINITY FIREWALL"
-
-echo
-
-echo "[✓] Protection Enabled"
-
-echo "[✓] Monitoring Active"
-
-}
-
-
-
-hash_file(){
-
-sha256sum "$2"
-
-}
-
-
-
-encrypt_file(){
-
-openssl enc -aes-256-cbc -pbkdf2 \
--in "$2" \
--out "$2.enc"
-
-
-echo "Encrypted: $2.enc"
-
-}
-
-
-
-security_report(){
-
-cat > report.html <<EOF
-
-<html>
-
-<h1>Divinity Security Report</h1>
-
-<p>Status: Secure</p>
-
-<p>Date: $(date)</p>
-
-<p>Directory: $(pwd)</p>
-
-</html>
-
-EOF
-
-
-echo "✓ report.html created"
-
-}
-
-
-
-backup(){
-
-mkdir -p ~/Divinity_Backup
-
-tar -czf ~/Divinity_Backup/projects.tar.gz ~/projects
-
-echo "✓ Backup Complete"
-
-}
-
-
-
-banner
+logo
 
 
 case "$1" in
@@ -294,117 +36,55 @@ case "$1" in
 --version)
 
 echo "Divinity CLI v$VERSION"
-
-;;
-
-
-status)
-
-status
-
-;;
-
-
-git)
-
-git_push "$@"
-
-;;
-
-
-create)
-
-if [ "$2" = "python" ]; then
-
-create_python "$3"
-
-elif [ "$2" = "node" ]; then
-
-create_node "$3"
-
-fi
-
-;;
-
-
-projects)
-
-projects
-
-;;
-
-
-open)
-
-open_project "$@"
-
-;;
-
-
-repo)
-
-repo_create "$@"
-
 ;;
 
 
 security)
 
-case "$2" in
-
-scan)
-
+if [ "$2" = "scan" ]; then
 security_scan
+fi
+
 ;;
+
 
 firewall)
 
-firewall
+firewall_check
+
 ;;
+
 
 hash)
 
-hash_file "$@"
+hash_check
+
 ;;
+
 
 encrypt)
 
-encrypt_file "$@"
+encrypt_file "$2"
+
 ;;
+
 
 report)
 
-security_report
-;;
-
-esac
-
-;;
-
-
-backup)
-
-backup
+generate_report
 
 ;;
 
 
 *)
 
-echo "Divinity Commands"
-
-echo "divinity status"
-echo "divinity create python name"
-echo "divinity create node name"
-echo "divinity projects"
-echo "divinity open name"
-echo "divinity repo create name"
+echo "Divinity Commands:"
+echo ""
 echo "divinity security scan"
-echo "divinity security firewall"
-echo "divinity security hash file"
-echo "divinity security encrypt file"
-echo "divinity security report"
-echo "divinity backup"
+echo "divinity firewall"
+echo "divinity hash"
+echo "divinity encrypt"
+echo "divinity report"
 
 ;;
 
